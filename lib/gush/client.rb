@@ -69,15 +69,8 @@ module Gush
     end
 
     def next_free_workflow_id
-      id = nil
-      loop do
-        id = SecureRandom.uuid
-        available = !redis.exists?("gush.workflow.#{id}")
-
-        break if available
-      end
-
-      id
+      # TODO: redis 3.2 does not support `exists?`
+      SecureRandom.uuid
     end
 
     def all_workflows
