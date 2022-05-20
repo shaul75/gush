@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'tmpdir'
+require 'ruby-graphviz'
 
 module Gush
   class Graph
@@ -13,7 +14,7 @@ module Gush
     end
 
     def viz
-      @graph = Graphviz::Graph.new(**graph_options)
+      @graph = GraphViz.new(**graph_options)
       @start_node = add_node('start', shape: 'diamond', fillcolor: '#CFF09E')
       @end_node = add_node('end', shape: 'diamond', fillcolor: '#F56991')
 
@@ -28,11 +29,11 @@ module Gush
         link_job_edges(job)
       end
 
-      format = 'png'
-      file_format = path.split('.')[-1]
-      format = file_format if file_format.length == 3
+      @graph
+    end
 
-      Graphviz::output(@graph, path: path, format: format)
+    def svg
+      viz.output(:svg => String)
     end
 
     def path
@@ -45,23 +46,32 @@ module Gush
       @graph.add_node(name, **node_options.merge(specific_options))
     end
 
+    def node_color_for_job(job)
+      return 'firebrick' if job.failed?
+      return '#01FF70' if job.running?
+      return '#2ECC40' if job.finished?
+      return 'darkgray' if job.enqueued?
+
+      'black'
+    end
+
     def add_job_node(job)
-      @job_name_to_node_map[job.name] = add_node(job.name, label: node_label_for_job(job))
+      @job_name_to_node_map[job.name] = add_node(job.name, label: node_label_for_job(job), color: node_color_for_job(job), href: "/gush/workflows/#{job.workflow_id}/#{job.id}", id: job.id, class: "job-node")
     end
 
     def link_job_edges(job)
       job_node = @job_name_to_node_map[job.name]
 
       if job.incoming.empty?
-        @start_node.connect(job_node, **edge_options)
+        @graph.add_edges(@start_node, job_node, **edge_options)
       end
 
       if job.outgoing.empty?
-        job_node.connect(@end_node, **edge_options)
+        @graph.add_edges(job_node, @end_node, **edge_options)
       else
         job.outgoing.each do |id|
           outgoing_job = workflow.find_job(id)
-          job_node.connect(@job_name_to_node_map[outgoing_job.name], **edge_options)
+          @graph.add_edges(job_node, @job_name_to_node_map[outgoing_job.name], **edge_options)
         end
       end
     end
@@ -82,9 +92,8 @@ module Gush
 
     def node_options
       {
-        shape: "ellipse",
+        shape: "rect",
         style: "filled",
-        color: "#555555",
         fillcolor: "white"
       }
     end

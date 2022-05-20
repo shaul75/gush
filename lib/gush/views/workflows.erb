@@ -1,0 +1,8 @@
+<div class="list-group list-group-flush">
+  <% @workflows.each_with_index do |h, idx| %>
+    <% workflow = h[:workflow].to_hash %>
+    <a href="/gush/workflows/<%= workflow[:id] %>" class="list-group-item list-group-item-action">
+      <%= "#{workflow[:name]} - #{workflow[:id]} <span class=\"badge text-bg-primary\">#{workflow[:status]}</span>" %>
+    </a>
+  <% end %>
+</div>

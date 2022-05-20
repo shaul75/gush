@@ -1,4 +1,5 @@
 require 'redis'
+
 require 'concurrent-ruby'
 
 module Gush
@@ -69,22 +70,18 @@ module Gush
     end
 
     def next_free_workflow_id
-      id = nil
-      loop do
-        id = SecureRandom.uuid
-        available = !redis.exists?("gush.workflow.#{id}")
-
-        break if available
-      end
-
-      id
+      return SecureRandom.uuid
     end
 
     def all_workflows
       redis.scan_each(match: "gush.workflows.*").map do |key|
         id = key.sub("gush.workflows.", "")
+        begin
         find_workflow(id)
-      end
+        rescue
+          next
+        end
+      end.compact
     end
 
     def find_workflow(id)

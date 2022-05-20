@@ -1,0 +1,18 @@
+<div class="container">
+  <div class="row">
+    <div class="col">
+    <span class="badge text-bg-primary"><%=@workflow[:status]%></span>
+    <ul class="list-group">
+      <li class="list-group-item">ID: <span class="badge text-bg-secondary"><%=@workflow[:id]%></span></li>
+      <li class="list-group-item">Arguments: <span class="badge text-bg-secondary"><%=@workflow[:arguments]%></span></li>
+      <li class="list-group-item">Total Jobs: <span class="badge text-bg-secondary"><%=@workflow[:total]%></span></li>
+      <li class="list-group-item">Finished Jobs: <span class="badge text-bg-secondary"><%=@workflow[:finished]%></span></li>
+      <li class="list-group-item">Started At: <span class="badge text-bg-secondary"><%=@workflow[:started_at]%></span></li>
+      <li class="list-group-item">Finished At: <span class="badge text-bg-secondary"><%=@workflow[:finished_at]%></span></li>
+    </ul>
+    </div>
+    <div class="col">
+      <%= @graph.svg %>
+    </div>
+  </div>
+</div>
